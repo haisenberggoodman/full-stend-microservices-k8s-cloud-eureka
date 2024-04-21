@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: config-service
+  namespace: library-platform
+  labels:
+    app: config-service
+spec:
+  externalName: config-service.library-platform.svc.cluster.local
+  selector:
+    app: config-service-container
+  ports:
+    - name: config-service
+      port: 8888
+      protocol: TCP
+      targetPort: 8888
+      nodePort: 30001
+  type: NodePort
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: config-service-deployment
+  namespace: library-platform
+  labels:
+    app: config-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: config-service-container
+  template:
+    metadata:
+      labels:
+        app: config-service-container
+    spec:
+      containers:
+        - name: config-service-container
+          image: ${{ secrets.DOCKER_HUB_LOGIN }}/config-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8888
+              name: config
+            - containerPort: 8761
+              name: discovery
+          env:
+            - name: EUREKA_HOST
+              value: $(DISCOVERY_SERVICE_SERVICE_HOST)
+            - name: EUREKA_PORT
+              value: $(DISCOVERY_SERVICE_SERVICE_PORT)

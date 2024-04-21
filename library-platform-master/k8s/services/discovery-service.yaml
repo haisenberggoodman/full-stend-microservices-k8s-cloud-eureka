@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: discovery-service
+  namespace: library-platform
+  labels:
+    app: discovery-service
+spec:
+  externalName: discovery-service.library-platform.svc.cluster.local
+  selector:
+    app: discovery-service-container
+  ports:
+    - name: discovery-service
+      port: 8761
+      protocol: TCP
+      targetPort: 8761
+      nodePort: 30002
+  type: NodePort
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: discovery-service-deployment
+  namespace: library-platform
+  labels:
+    app: discovery-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: discovery-service-container
+  template:
+    metadata:
+      labels:
+        app: discovery-service-container
+    spec:
+      containers:
+        - name: discovery-service-container
+          image: ${{ secrets.DOCKER_HUB_LOGIN }}/discovery-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8888
+              name: config
+            - containerPort: 8761
+              name: discovery

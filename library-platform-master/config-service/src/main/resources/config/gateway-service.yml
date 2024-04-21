@@ -1,0 +1,40 @@
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: product_route
+          uri: lb://product-service
+          predicates:
+            - Path=/products/**
+        - id: profile_route
+          uri: lb://profile-service
+          predicates:
+            - Path=/profiles/**
+        - id: order_route
+          uri: http://localhost:8084/orders/**
+          predicates:
+            - Path=/orders/**
+        - id: payment_route
+          uri: http://${PAYMENT_SERVICE_HOST}:${PAYMENT_SERVICE_PORT}/payments/**
+          predicates:
+            - Path=/payments/**
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${EUREKA_HOST}:${EUREKA_PORT}/eureka
+      instance:
+        preferIpAddress: true

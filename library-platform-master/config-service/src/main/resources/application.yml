@@ -1,0 +1,26 @@
+# only for config service
+server:
+  port: 8888
+
+spring:
+  application:
+    name: config-service
+  cloud:
+    config:
+      server:
+        native: classpath:/config
+  profiles:
+    active: native
+
+#sentry:
+#  dsn: $CONFIG_URI
+#  # Set traces-sample-rate to 1.0 to capture 100% of transactions for performance monitoring.
+#  # We recommend adjusting this value in production.
+#  traces-sample-rate: 1.0
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${EUREKA_HOST}:${EUREKA_PORT}/eureka
+      instance:
+        preferIpAddress: true

@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: profile-service
+  namespace: library-platform
+  labels:
+    app: profile-service
+spec:
+  externalName: profile-service.library-platform.svc.cluster.local
+  selector:
+    app: profile-service-container
+  ports:
+    - name: profile-service
+      port: 8082
+      protocol: TCP
+      targetPort: 8082
+      nodePort: 30007
+  type: NodePort
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: profile-service-deployment
+  namespace: library-platform
+  labels:
+    app: profile-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: profile-service-container
+  template:
+    metadata:
+      labels:
+        app: profile-service-container
+    spec:
+      containers:
+        - name: profile-service-container
+          image: ${{ secrets.DOCKER_HUB_LOGIN }}/profile-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8082
+              name: rest
+            - containerPort: 8888
+              name: config
+            - containerPort: 8761
+              name: discovery
+            - containerPort: 9092
+              name: kafka
+          env:
+            - name: CONFIG_SERVICE_HOST
+              value: $(CONFIG_SERVICE_SERVICE_HOST)
+            - name: CONFIG_SERVICE_PORT
+              value: $(CONFIG_SERVICE_SERVICE_PORT)
+            - name: EUREKA_HOST
+              value: $(DISCOVERY_SERVICE_SERVICE_HOST)
+            - name: EUREKA_PORT
+              value: $(DISCOVERY_SERVICE_SERVICE_PORT)

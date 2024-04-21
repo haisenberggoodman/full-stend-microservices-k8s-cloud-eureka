@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: product-service
+  config:
+    import: configserver:http://${CONFIG_SERVICE_HOST}:${CONFIG_SERVICE_PORT}
